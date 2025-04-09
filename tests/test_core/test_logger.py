@@ -3,6 +3,8 @@ import asyncio
 from photo_enhancer_tg_bot.core.logger import AsyncLogger
 
 """Test the alert sending mechanism"""
+
+
 # Execute with mock session
 # Preferred way - use async context manager
 async def main():

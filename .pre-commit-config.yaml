@@ -11,13 +11,14 @@ repos:
       - id: debug-statements
       - id: detect-private-key
       - id: check-ast
-
   - repo: https://github.com/psf/black
-    rev: '22.3.0'
+    rev: 24.4.2  # Use latest stable version
     hooks:
       - id: black
+        args: [--preview]  # More consistent formatting
 
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.10.1
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
     hooks:
       - id: isort
+        args: ["--profile", "black", "--filter-files"]

@@ -42,6 +42,23 @@ class BotSettings(EnvBaseSettings):
     model_config = SettingsConfigDict(env_prefix=f"{environment_prefix}_BOT_")
 
 
+class CacheSettings(EnvBaseSettings):
+    host: str = "redis"
+    port: int = 6379
+    ttl: str = ""
+    db: str = "0"
+    password: Optional[str] = None
+
+    @property
+    def redis_url(self) -> str:
+        if self.password:
+            return f"redis://:{self.password}@{self.host}:/{self.db}"
+        return f"redis://{self.host}:{self.port}/{self.db}"
+
+    class Config:
+        env_prefix = "REDIS_"
+
+
 class Settings(BaseSettings):
     bot: BotSettings = BotSettings()
     base_dir: Path = BASE_DIR
@@ -49,7 +66,7 @@ class Settings(BaseSettings):
     # sentry: SentryConfig = SentryConfig()
     # gitlab: GitlabConfig = GitlabConfig()
     # aws: AWSConfig = AWSConfig()
-    # cache: CacheSettings = CacheSettings()
+    cache: CacheSettings = CacheSettings()
     # image_process: ImageProcessAPI = ImageProcessAPI()
     # database: DatabaseConfig = DatabaseConfig()
 

@@ -1,27 +1,57 @@
-from pydantic_settings import BaseSettings
+from __future__ import annotations
+
+import os
+from pathlib import Path
+from typing import Any, Optional
+
+from dotenv import load_dotenv
+from pydantic import HttpUrl, PostgresDsn, SecretStr, validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Fetch the prefix from the environment or set a default
+environment_prefix: str = os.getenv("ENVIRONMENT", "DEV_")
+
+BASE_DIR: Path = Path(__file__).absolute().parent.parent.parent
 
 
-class AwsConfig(BaseSettings):
-    endpoint: str
-    access_key_id: str
-    secret_access_key: str
+class EnvBaseSettings(BaseSettings):
+    environment: str = environment_prefix
+    model_config = SettingsConfigDict(
+        env_file=".env" if os.path.exists(".env") else None,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
-class LoggerConfig(BaseSettings):
-    level: str
+class LoggingConfig(EnvBaseSettings):
+    log_level: str = "INFO"
+    file: Optional[str] = None
+    serializer: bool = False
     alert_channel: int
-    remote_token: str
-    file: str = ""
-
-
-class BotConfig(BaseSettings):
-    token: str
-    aws: AwsConfig
-    logger: LoggerConfig
+    remote_token: SecretStr
 
     class Config:
-        env_file = ".env"
-        env_nested_delimiter = "__"
+        env_prefix: str = f"{environment_prefix}_LOG_"
 
 
-bot_config = BotConfig()
+class BotSettings(EnvBaseSettings):
+    token: SecretStr
+    alerts_chanel: str
+    admin_token: str
+    chat_id: str
+    model_config = SettingsConfigDict(env_prefix=f"{environment_prefix}_BOT_")
+
+
+class Settings(BaseSettings):
+    bot: BotSettings = BotSettings()
+    base_dir: Path = BASE_DIR
+    logger: LoggingConfig = LoggingConfig()
+    # sentry: SentryConfig = SentryConfig()
+    # gitlab: GitlabConfig = GitlabConfig()
+    # aws: AWSConfig = AWSConfig()
+    # cache: CacheSettings = CacheSettings()
+    # image_process: ImageProcessAPI = ImageProcessAPI()
+    # database: DatabaseConfig = DatabaseConfig()
+
+
+bot_config = Settings()
